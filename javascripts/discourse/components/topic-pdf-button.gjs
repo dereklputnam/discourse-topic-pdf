@@ -5,41 +5,29 @@ import { on } from "@ember/modifier";
 import { ajax } from "discourse/lib/ajax";
 import icon from "discourse-common/helpers/d-icon";
 
-// ─── Rule matching ───────────────────────────────────────────────────────────
-// pdf_rules is type:objects. Each row has:
-//   selected_categories — array of category IDs (type:categories)
-//   selected_tags       — array of tag name strings (type:tags)
-//   selected_topic_ids  — comma-separated topic ID string (type:string)
-//
-// The button shows if ANY rule matches the current topic.
+// ─── Settings parsers ────────────────────────────────────────────────────────
+// list and list_type settings are stored pipe-separated internally.
+// topic IDs accept pipe or comma (manual entry).
 
-function ruleMatches(rule, topic) {
-  const cats = rule.selected_categories || [];
-  const tags = (rule.selected_tags || []).map((t) => t.toLowerCase());
-  const topicIds = (rule.selected_topic_ids || "")
-    .split(",")
+function parseCategoryIds() {
+  return (settings.enabled_categories || "")
+    .split("|")
     .map((s) => parseInt(s.trim(), 10))
     .filter((n) => !isNaN(n) && n > 0);
+}
 
-  // An empty rule matches nothing
-  if (!cats.length && !tags.length && !topicIds.length) {
-    return false;
-  }
+function parseTagList() {
+  return (settings.enabled_tags || "")
+    .split("|")
+    .map((s) => s.trim().toLowerCase())
+    .filter(Boolean);
+}
 
-  if (topicIds.length && topicIds.includes(topic.id)) {
-    return true;
-  }
-
-  if (cats.length && cats.includes(topic.category_id)) {
-    return true;
-  }
-
-  const topicTags = (topic.tags || []).map((t) => t.toLowerCase());
-  if (tags.length && tags.some((t) => topicTags.includes(t))) {
-    return true;
-  }
-
-  return false;
+function parseTopicIds() {
+  return (settings.enabled_topic_ids || "")
+    .split(/[,|]/)
+    .map((s) => parseInt(s.trim(), 10))
+    .filter((n) => !isNaN(n) && n > 0);
 }
 
 // ─── HTML helpers ────────────────────────────────────────────────────────────
@@ -500,14 +488,29 @@ export default class TopicPdfButton extends Component {
       return false;
     }
 
-    const rules = settings.pdf_rules || [];
+    const categoryIds = parseCategoryIds();
+    const tags = parseTagList();
+    const topicIds = parseTopicIds();
 
-    // No rules configured → hidden everywhere
-    if (!rules.length) {
+    // Nothing configured → hidden everywhere
+    if (!categoryIds.length && !tags.length && !topicIds.length) {
       return false;
     }
 
-    return rules.some((rule) => ruleMatches(rule, topic));
+    if (topicIds.length && topicIds.includes(topic.id)) {
+      return true;
+    }
+
+    if (categoryIds.length && categoryIds.includes(topic.category_id)) {
+      return true;
+    }
+
+    const topicTags = (topic.tags || []).map((t) => t.toLowerCase());
+    if (tags.length && tags.some((t) => topicTags.includes(t))) {
+      return true;
+    }
+
+    return false;
   }
 
   @action

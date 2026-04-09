@@ -1,17 +1,22 @@
-pdf_rules:
-  type: objects
-  default: []
+enabled_categories:
+  type: list
+  list_type: category
+  default: ""
   description:
-    en: "Rules that control where the PDF button appears. Add one or more rows; the button shows if any row matches the current topic. The button is hidden everywhere until at least one rule is saved."
-  schema:
-    name: PDF Rule
-    properties:
-      selected_categories:
-        type: categories
-      selected_tags:
-        type: tags
-      selected_topic_ids:
-        type: string
+    en: "Categories where the PDF button appears. Leave empty to hide everywhere."
+
+enabled_tags:
+  type: list
+  list_type: tag
+  default: ""
+  description:
+    en: "Tags where the PDF button appears. Leave empty to hide everywhere."
+
+enabled_topic_ids:
+  type: list
+  default: ""
+  description:
+    en: "Specific topic IDs where the PDF button always appears (comma or pipe separated)."
 
 first_post_only:
   type: bool
