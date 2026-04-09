@@ -1,0 +1,9 @@
+{
+  "name": "Topic PDF Download",
+  "component": true,
+  "authors": [],
+  "about_url": null,
+  "license_url": null,
+  "minimum_discourse_version": "3.2.0.beta3",
+  "maximum_discourse_version": null
+}

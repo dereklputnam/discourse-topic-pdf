@@ -1,0 +1,16 @@
+en:
+  js:
+    topic_pdf_download:
+      button_label: "Download PDF"
+      preparing: "Preparing PDF…"
+      error: "Could not generate PDF. Please try again."
+      popup_blocked: "Please allow popups for this site to use PDF download."
+  theme_metadata:
+    description: "Adds a clean PDF download button to topics. Configurable by category, tag, or specific topic. Supports first-post-only or full thread export."
+    settings:
+      enabled_category_ids: "Category IDs (comma-separated) where the PDF button appears. Leave empty to show everywhere."
+      enabled_tags: "Tags (comma-separated) — button shows on topics with any of these tags. Leave empty to ignore."
+      enabled_topic_ids: "Topic IDs (comma-separated) to always show the button on."
+      first_post_only: "Include only the original post in the PDF (disable to include replies)."
+      show_post_meta: "Show author and date above each post in the PDF."
+      button_location: "Plugin outlet where the button is rendered."

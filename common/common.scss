@@ -1,0 +1,22 @@
+// Topic PDF Download — forum-side button styles
+// The PDF document itself is styled by the inline CSS in topic-pdf-button.gjs.
+
+.topic-pdf-btn {
+  // Inherits .btn and .btn-default from Discourse core.
+  // The print icon is rendered by DButton via the d-icon helper.
+
+  // Subtle visual separation if rendered above the post stream
+  .topic-above-post-stream & {
+    margin-bottom: 0.5em;
+  }
+}
+
+// Inline error message shown if PDF generation fails
+.topic-pdf-error {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.3em;
+  color: var(--danger);
+  font-size: var(--font-down-1);
+  margin-left: 0.5em;
+}

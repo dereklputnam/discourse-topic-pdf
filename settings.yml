@@ -1,0 +1,39 @@
+enabled_category_ids:
+  type: list
+  default: ""
+  description:
+    en: "Category IDs where the PDF button appears. The button will not appear unless at least one of these fields is configured."
+
+enabled_tags:
+  type: list
+  default: ""
+  description:
+    en: "Tags — PDF button appears on topics that have at least one of these tags. The button will not appear unless at least one of these fields is configured."
+
+enabled_topic_ids:
+  type: list
+  default: ""
+  description:
+    en: "Specific topic IDs to show the PDF button on. The button will not appear unless at least one of these fields is configured."
+
+first_post_only:
+  type: boolean
+  default: true
+  description:
+    en: "When enabled, only the first post (original post) is included in the PDF. Disable to include all replies."
+
+show_post_meta:
+  type: boolean
+  default: true
+  description:
+    en: "Show author username and date above each post in the PDF."
+
+button_location:
+  type: enum
+  default: "topic-above-post-stream"
+  choices:
+    - "topic-above-post-stream"
+    - "topic-footer-buttons"
+    - "above-topic-footer-buttons"
+  description:
+    en: "Plugin outlet where the PDF button is rendered."
