@@ -1,4 +1,4 @@
-# Topic PDF Download
+# Topic PDF Download Button
 
 A Discourse theme component that adds a "Download PDF" button to topics, generating a clean, print-ready document via the browser's built-in print dialog.
 
