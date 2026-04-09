@@ -76,6 +76,21 @@ function processCooked(html) {
 // ─── Table of contents builder ───────────────────────────────────────────────
 // Scans an HTML string for <h1>–<h6> elements, injects anchor IDs, and returns
 // both the modified HTML and a TOC nav block. Skips headings with no text.
+// maxLevel limits which headings appear in the TOC (all still get IDs).
+
+function parseTocMaxLevel() {
+  const val = settings.toc_max_depth || "All headings";
+  if (val === "H1 only") {
+    return 1;
+  }
+  if (val === "H1 – H2") {
+    return 2;
+  }
+  if (val === "H1 – H3") {
+    return 3;
+  }
+  return 6;
+}
 
 function buildToc(html) {
   const headings = [];
@@ -101,9 +116,18 @@ function buildToc(html) {
     return { html, tocHtml: "" };
   }
 
+  // Filter headings for the TOC based on the configured depth
+  const maxLevel = parseTocMaxLevel();
   const minLevel = Math.min(...headings.map((h) => h.level));
+  const maxAllowed = minLevel + maxLevel - 1;
 
-  const items = headings
+  const tocHeadings = headings.filter((h) => h.level <= maxAllowed);
+
+  if (!tocHeadings.length) {
+    return { html: processed, tocHtml: "" };
+  }
+
+  const items = tocHeadings
     .map((h) => {
       const depth = h.level - minLevel;
       return `<li class="pdf-toc-item pdf-toc-depth-${depth}"><a href="#${h.id}">${escapeHtml(h.text)}</a></li>`;

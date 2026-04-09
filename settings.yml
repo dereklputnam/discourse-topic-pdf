@@ -48,6 +48,17 @@ show_toc:
   description:
     en: "Auto-generate a table of contents from headings in the post content."
 
+toc_max_depth:
+  type: enum
+  default: "H1 – H2"
+  choices:
+    - "H1 only"
+    - "H1 – H2"
+    - "H1 – H3"
+    - "All headings"
+  description:
+    en: "Maximum heading depth to include in the PDF outline. Deeper headings are still rendered in the body."
+
 
 button_style:
   type: enum
