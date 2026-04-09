@@ -109,7 +109,7 @@ function buildPrintHtml(topic, posts) {
     typeof t === "string" ? t : t?.name || ""
   ).filter(Boolean);
 
-  const tagsHtml = tagNames.length
+  const tagsHtml = settings.show_tags && tagNames.length
     ? `<div class="pdf-tags">${tagNames
         .map((t) => `<span class="pdf-tag">${escapeHtml(t)}</span>`)
         .join(" ")}</div>`
