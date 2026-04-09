@@ -2,8 +2,8 @@ import Component from "@glimmer/component";
 import { action } from "@ember/object";
 import { tracked } from "@glimmer/tracking";
 import { service } from "@ember/service";
+import { modifier } from "ember-modifier";
 import { on } from "@ember/modifier";
-import { and } from "truth-helpers";
 import { ajax } from "discourse/lib/ajax";
 import icon from "discourse-common/helpers/d-icon";
 
@@ -781,10 +781,20 @@ export default class TopicPdfButton extends Component {
     return false;
   }
 
-  get hasToc() {
-    // DiscoTOC renders .d-toc-wrapper when the topic qualifies for a TOC
-    return !!document.querySelector(".d-toc-wrapper");
-  }
+  // Detect DiscoTOC after it has rendered. The modifier fires on insert and
+  // re-runs when its argument (topic) changes, handling SPA navigation.
+  @tracked tocDetected = false;
+
+  detectToc = modifier((element, [topic]) => {
+    this.tocDetected = false;
+    if (!settings.show_toc) {
+      return;
+    }
+    const timer = setTimeout(() => {
+      this.tocDetected = !!document.querySelector(".d-toc-item");
+    }, 800);
+    return () => clearTimeout(timer);
+  });
 
   @action
   toggleToc(event) {
@@ -847,7 +857,7 @@ export default class TopicPdfButton extends Component {
 
   <template>
     {{#if this.shouldShow}}
-      <div class="topic-pdf-btn-wrap">
+      <div class="topic-pdf-btn-wrap" {{this.detectToc this.topic}}>
         <button
           type="button"
           class={{this.buttonClass}}
@@ -861,7 +871,7 @@ export default class TopicPdfButton extends Component {
         {{#if this.errorMsg}}
           <span class="topic-pdf-error">{{this.errorMsg}}</span>
         {{/if}}
-        {{#if (and settings.show_toc this.hasToc)}}
+        {{#if this.tocDetected}}
           <label class="topic-pdf-toc-toggle">
             <input
               type="checkbox"
