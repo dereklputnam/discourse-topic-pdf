@@ -32,7 +32,7 @@ A Discourse theme component that adds a "Download PDF" button to topics, generat
 1. In your Discourse admin panel, go to **Admin > Customize > Themes**
 2. Click **Install** and enter the repository URL:
    ```
-   https://github.com/dereklputnam/discourse-topic-pdf
+   https://github.com/dereklputnam/discourse-pdf-download
    ```
 3. Add the component to your active theme
 4. Configure the settings to specify which categories, tags, or topics should show the button

@@ -2,8 +2,8 @@
   "name": "Topic PDF Download Button",
   "component": true,
   "authors": "Derek Putnam",
-  "about_url": "https://github.com/dereklputnam/discourse-topic-pdf",
-  "license_url": "https://github.com/dereklputnam/discourse-topic-pdf/blob/main/LICENSE",
+  "about_url": "https://github.com/dereklputnam/discourse-pdf-download",
+  "license_url": "https://github.com/dereklputnam/discourse-pdf-download/blob/main/LICENSE",
   "minimum_discourse_version": "3.2.0.beta3",
   "maximum_discourse_version": null
 }
