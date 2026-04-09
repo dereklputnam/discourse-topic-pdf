@@ -578,6 +578,16 @@ export default class TopicPdfButton extends Component {
       win.document.open();
       win.document.write(html);
       win.document.close();
+
+      // Trigger print from the opener — more reliable than the inline
+      // script inside the popup, which some browsers block.
+      setTimeout(() => {
+        try {
+          win.print();
+        } catch (e) {
+          // Silently ignore if the popup was closed before print fired
+        }
+      }, 800);
     } catch (err) {
       // eslint-disable-next-line no-console
       console.error("[topic-pdf-download]", err);
