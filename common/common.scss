@@ -51,15 +51,14 @@
   gap: 0.4em;
 }
 
-// TOC checkbox below the button, centered
+// TOC checkbox below the button
 .topic-pdf-toc-toggle {
   display: inline-flex;
   align-items: center;
-  justify-content: center;
   gap: 0.3em;
   flex-basis: 100%;
   font-size: var(--font-down-1);
-  font-weight: normal;
+  font-weight: normal !important; // override Discourse core label:not(...) { font-weight: bold }
   color: var(--primary-medium);
   cursor: pointer;
   user-select: none;
