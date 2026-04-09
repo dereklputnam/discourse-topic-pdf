@@ -73,24 +73,25 @@ function processCooked(html) {
 
 // ─── PDF document builder ────────────────────────────────────────────────────
 
-function getSiteLogo() {
-  // Discourse swaps the logo src (or hides/shows elements) on scroll, so the
-  // DOM reflects whatever state existed when the button was clicked.
-  // Use the JS site-settings object instead — it holds the configured URL
-  // independent of scroll state.
-  const ds = window.Discourse?.SiteSettings;
-  if (ds?.logo) {
-    const path = ds.logo;
-    return path.startsWith("http") ? path : `${window.location.origin}${path}`;
+// ─── Logo URL — captured once at module init ─────────────────────────────────
+// Discourse swaps the header logo on scroll (shows the compact icon once the
+// user scrolls down). Capturing the URL here — at module load time, before any
+// scroll events fire — guarantees we always get the full-size logo.
+const SITE_LOGO_URL = (() => {
+  // Prefer the big logo element; it is visible at page load
+  const selectors = [
+    "img.logo-big",
+    "#site-logo",
+    ".d-header img:not(.logo-small)",
+  ];
+  for (const sel of selectors) {
+    const el = document.querySelector(sel);
+    if (el?.src) {
+      return el.src;
+    }
   }
-
-  // Fallback: prefer the big logo element; ignore anything named logo-small
-  const headerImgs = Array.from(document.querySelectorAll(".d-header img"));
-  const big = headerImgs.find(
-    (el) => !el.classList.contains("logo-small") && el.src
-  );
-  return big?.src || null;
-}
+  return null;
+})();
 
 function buildPrintHtml(topic, posts) {
   const origin = window.location.origin;
@@ -102,7 +103,7 @@ function buildPrintHtml(topic, posts) {
     document.title.split(" - ").slice(-1)[0]?.trim() ||
     window.location.hostname;
 
-  const logoUrl = getSiteLogo();
+  const logoUrl = SITE_LOGO_URL;
 
   // topic.tags can be an array of strings or tag objects with a .name property
   const tagNames = (topic.tags || []).map((t) =>
@@ -159,7 +160,7 @@ function buildPrintHtml(topic, posts) {
         : `<div class="pdf-source">${escapeHtml(siteTitle)}</div>`
       }
       <h1 class="pdf-title">
-        ${escapeHtml(topic.title)}<a class="pdf-title-link" href="${escapeHtml(topicUrl)}" title="Link to original document"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/></svg></a>
+        ${escapeHtml(topic.title)}<a class="pdf-title-link" href="${escapeHtml(topicUrl)}" title="Link to original document"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" aria-hidden="true"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/></svg></a>
       </h1>
       ${tagsHtml}
     </header>
@@ -261,8 +262,10 @@ function getPdfCss() {
       width: 16px;
       height: 16px;
       fill: none;
-      stroke: currentColor;
+      stroke: #aaa;
       stroke-width: 2;
+      stroke-linecap: round;
+      stroke-linejoin: round;
     }
 
     .pdf-tags { margin-bottom: 8px; }
