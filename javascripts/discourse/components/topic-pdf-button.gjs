@@ -104,12 +104,16 @@ function buildPrintHtml(topic, posts) {
 
   const logoUrl = getSiteLogo();
 
-  const tagsHtml =
-    topic.tags && topic.tags.length
-      ? `<div class="pdf-tags">${topic.tags
-          .map((t) => `<span class="pdf-tag">${escapeHtml(t)}</span>`)
-          .join(" ")}</div>`
-      : "";
+  // topic.tags can be an array of strings or tag objects with a .name property
+  const tagNames = (topic.tags || []).map((t) =>
+    typeof t === "string" ? t : t?.name || ""
+  ).filter(Boolean);
+
+  const tagsHtml = tagNames.length
+    ? `<div class="pdf-tags">${tagNames
+        .map((t) => `<span class="pdf-tag">${escapeHtml(t)}</span>`)
+        .join(" ")}</div>`
+    : "";
 
   const postsHtml = posts
     .map((post, idx) => {
@@ -156,7 +160,7 @@ function buildPrintHtml(topic, posts) {
       }
       <h1 class="pdf-title">${escapeHtml(topic.title)}</h1>
       ${tagsHtml}
-      <a class="pdf-url" href="${escapeHtml(topicUrl)}">${escapeHtml(topicUrl)}</a>
+      <a class="pdf-url" href="${escapeHtml(topicUrl)}">Link to original document</a>
     </header>
 
     <main class="pdf-body">
@@ -539,7 +543,9 @@ export default class TopicPdfButton extends Component {
       return true;
     }
 
-    const topicTags = (topic.tags || []).map((t) => t.toLowerCase());
+    const topicTags = (topic.tags || []).map((t) =>
+      (typeof t === "string" ? t : t?.name || "").toLowerCase()
+    );
     if (tags.length && tags.some((t) => topicTags.includes(t))) {
       return true;
     }
