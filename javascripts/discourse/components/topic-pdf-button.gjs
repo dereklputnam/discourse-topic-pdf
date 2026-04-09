@@ -73,6 +73,25 @@ function processCooked(html) {
 
 // ─── PDF document builder ────────────────────────────────────────────────────
 
+function getSiteLogo() {
+  // Try Discourse's standard logo selectors in order of specificity
+  const selectors = [
+    "#site-logo",
+    ".title img",
+    ".d-header .logo-wrapper img",
+    ".d-header img[alt]",
+    "img.logo-big",
+  ];
+  for (const sel of selectors) {
+    const el = document.querySelector(sel);
+    // el.src is always an absolute URL in the browser
+    if (el?.src) {
+      return el.src;
+    }
+  }
+  return null;
+}
+
 function buildPrintHtml(topic, posts) {
   const origin = window.location.origin;
   const topicUrl = `${origin}/t/${encodeURIComponent(topic.slug || topic.id)}/${topic.id}`;
@@ -82,6 +101,8 @@ function buildPrintHtml(topic, posts) {
     document.querySelector("meta[property='og:site_name']")?.getAttribute("content") ||
     document.title.split(" - ").slice(-1)[0]?.trim() ||
     window.location.hostname;
+
+  const logoUrl = getSiteLogo();
 
   const tagsHtml =
     topic.tags && topic.tags.length
@@ -129,7 +150,10 @@ function buildPrintHtml(topic, posts) {
   <div class="pdf-wrap">
 
     <header class="pdf-header">
-      <div class="pdf-source">${escapeHtml(siteTitle)}</div>
+      ${logoUrl
+        ? `<img class="pdf-logo" src="${escapeHtml(logoUrl)}" alt="${escapeHtml(siteTitle)}">`
+        : `<div class="pdf-source">${escapeHtml(siteTitle)}</div>`
+      }
       <h1 class="pdf-title">${escapeHtml(topic.title)}</h1>
       ${tagsHtml}
       <a class="pdf-url" href="${escapeHtml(topicUrl)}">${escapeHtml(topicUrl)}</a>
@@ -188,6 +212,16 @@ function getPdfCss() {
       padding-bottom: 18px;
       margin-bottom: 28px;
       border-bottom: 2px solid #ddd;
+    }
+
+    .pdf-logo {
+      display: block;
+      max-height: 48px;
+      max-width: 200px;
+      width: auto;
+      height: auto;
+      object-fit: contain;
+      margin-bottom: 14px;
     }
 
     .pdf-source {
