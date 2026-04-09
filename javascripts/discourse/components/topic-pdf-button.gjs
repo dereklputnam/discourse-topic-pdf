@@ -74,15 +74,16 @@ function processCooked(html) {
 // ─── PDF document builder ────────────────────────────────────────────────────
 
 function getSiteLogo() {
-  // Try Discourse's standard logo selectors in order of specificity
-  const selectors = [
-    "#site-logo",
-    ".title img",
-    ".d-header .logo-wrapper img",
-    ".d-header img[alt]",
+  // Discourse renders two logos: .logo-big (full, shown at top of page) and
+  // .logo-small (compact icon, shown after scrolling). Always prefer the big
+  // one so the PDF reflects the primary branding regardless of scroll position.
+  const preferredSelectors = [
     "img.logo-big",
+    "#site-logo",
+    ".d-header .logo-wrapper img:not(.logo-small)",
+    ".d-header img[alt]:not(.logo-small)",
   ];
-  for (const sel of selectors) {
+  for (const sel of preferredSelectors) {
     const el = document.querySelector(sel);
     // el.src is always an absolute URL in the browser
     if (el?.src) {
@@ -158,9 +159,10 @@ function buildPrintHtml(topic, posts) {
         ? `<img class="pdf-logo" src="${escapeHtml(logoUrl)}" alt="${escapeHtml(siteTitle)}">`
         : `<div class="pdf-source">${escapeHtml(siteTitle)}</div>`
       }
-      <h1 class="pdf-title">${escapeHtml(topic.title)}</h1>
+      <h1 class="pdf-title">
+        ${escapeHtml(topic.title)}<a class="pdf-title-link" href="${escapeHtml(topicUrl)}" title="Link to original document"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" aria-hidden="true"><path d="M3.9 12c0-1.71 1.39-3.1 3.1-3.1h4V7H7c-2.76 0-5 2.24-5 5s2.24 5 5 5h4v-1.9H7c-1.71 0-3.1-1.39-3.1-3.1zM8 13h8v-2H8v2zm9-6h-4v1.9h4c1.71 0 3.1 1.39 3.1 3.1s-1.39 3.1-3.1 3.1h-4V17h4c2.76 0 5-2.24 5-5s-2.24-5-5-5z"/></svg></a>
+      </h1>
       ${tagsHtml}
-      <a class="pdf-url" href="${escapeHtml(topicUrl)}">Link to original document</a>
     </header>
 
     <main class="pdf-body">
@@ -244,6 +246,24 @@ function getPdfCss() {
       margin-bottom: 10px;
     }
 
+    /* Chain-link icon inline after the title */
+    .pdf-title-link {
+      display: inline-flex;
+      align-items: center;
+      margin-left: 6px;
+      vertical-align: middle;
+      color: #aaa;
+      text-decoration: none;
+    }
+
+    .pdf-title-link:hover { color: #0076d6; }
+
+    .pdf-title-link svg {
+      width: 16px;
+      height: 16px;
+      fill: currentColor;
+    }
+
     .pdf-tags { margin-bottom: 8px; }
 
     .pdf-tag {
@@ -254,13 +274,6 @@ function getPdfCss() {
       font-size: 9pt;
       color: #555;
       margin-right: 4px;
-    }
-
-    .pdf-url {
-      font-size: 8.5pt;
-      color: #aaa;
-      word-break: break-all;
-      text-decoration: none;
     }
 
     /* ── Post layout ── */

@@ -1,6 +1,20 @@
 // Topic PDF Download — forum-side button styles
 // The PDF document itself is styled by the inline CSS in topic-pdf-button.gjs.
 
+// Force our button to render above the table of contents in the
+// topic-navigation panel. The TOC plugin registers in topic-navigation
+// before our initializer runs, so it ends up first in DOM order.
+// Making the container a flex column and using order: -1 overrides that.
+.topic-navigation {
+  display: flex !important;
+  flex-direction: column;
+
+  .topic-pdf-btn-wrap {
+    order: -1;
+    margin-bottom: 0.5em;
+  }
+}
+
 // Wrapper div rendered around the button in every outlet.
 // Centers the button when in topic-level outlets (above-posts, above-post-stream).
 // Flows left-aligned when inside a post (post-before-cooked).
