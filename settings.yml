@@ -1,32 +1,17 @@
-enabled_categories:
+pdf_rules:
   type: objects
   default: []
   description:
-    en: "Categories where the PDF button appears. The button will not appear unless at least one of these fields is configured."
+    en: "Rules that control where the PDF button appears. Add one or more rows; the button shows if any row matches the current topic. The button is hidden everywhere until at least one rule is saved."
   schema:
-    name: Category
+    name: PDF Rule
     properties:
-      categories:
+      selected_categories:
         type: categories
-        required: true
-
-enabled_tags:
-  type: objects
-  default: []
-  description:
-    en: "Tags where the PDF button appears. The button will not appear unless at least one of these fields is configured."
-  schema:
-    name: Tag
-    properties:
-      tags:
+      selected_tags:
         type: tags
-        required: true
-
-enabled_topic_ids:
-  type: list
-  default: ""
-  description:
-    en: "Specific topic IDs to show the PDF button on. The button will not appear unless at least one of these fields is configured."
+      selected_topic_ids:
+        type: string
 
 first_post_only:
   type: bool
@@ -42,8 +27,9 @@ show_post_meta:
 
 button_location:
   type: enum
-  default: "topic-above-post-stream"
+  default: "topic-above-posts"
   choices:
+    - "topic-above-posts"
     - "topic-above-post-stream"
     - "topic-footer-buttons"
     - "above-topic-footer-buttons"

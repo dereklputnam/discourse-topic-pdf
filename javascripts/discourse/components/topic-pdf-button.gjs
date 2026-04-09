@@ -1,40 +1,45 @@
 import Component from "@glimmer/component";
 import { action } from "@ember/object";
 import { tracked } from "@glimmer/tracking";
+import { on } from "@ember/modifier";
 import { ajax } from "discourse/lib/ajax";
-import DButton from "discourse/components/d-button";
-import { i18n } from "discourse-i18n";
+import icon from "discourse-common/helpers/d-icon";
 
-// ─── List parsers ────────────────────────────────────────────────────────────
-// Discourse list settings are stored as pipe-separated strings internally,
-// but users enter them comma-separated in the UI. Handle both.
+// ─── Rule matching ───────────────────────────────────────────────────────────
+// pdf_rules is type:objects. Each row has:
+//   selected_categories — array of category IDs (type:categories)
+//   selected_tags       — array of tag name strings (type:tags)
+//   selected_topic_ids  — comma-separated topic ID string (type:string)
+//
+// The button shows if ANY rule matches the current topic.
 
-// enabled_topic_ids is still a plain list setting (no picker type for topics)
-function parseIdList(str) {
-  if (!str) {
-    return [];
-  }
-
-  return str
-    .split(/[,|]/)
+function ruleMatches(rule, topic) {
+  const cats = rule.selected_categories || [];
+  const tags = (rule.selected_tags || []).map((t) => t.toLowerCase());
+  const topicIds = (rule.selected_topic_ids || "")
+    .split(",")
     .map((s) => parseInt(s.trim(), 10))
     .filter((n) => !isNaN(n) && n > 0);
-}
 
-// enabled_categories is type:objects — each row has a `categories` array of IDs
-// e.g. [{categories: [5, 12]}, {categories: [7]}]
-function parseCategoryIds() {
-  return (settings.enabled_categories || []).flatMap(
-    (row) => row.categories || []
-  );
-}
+  // An empty rule matches nothing
+  if (!cats.length && !tags.length && !topicIds.length) {
+    return false;
+  }
 
-// enabled_tags is type:objects — each row has a `tags` array of tag name strings
-// e.g. [{tags: ["support", "how-to"]}, ...]
-function parseEnabledTags() {
-  return (settings.enabled_tags || [])
-    .flatMap((row) => row.tags || [])
-    .map((t) => t.toLowerCase());
+  if (topicIds.length && topicIds.includes(topic.id)) {
+    return true;
+  }
+
+  if (cats.length && cats.includes(topic.category_id)) {
+    return true;
+  }
+
+  const topicTags = (topic.tags || []).map((t) => t.toLowerCase());
+  if (tags.length && tags.some((t) => topicTags.includes(t))) {
+    return true;
+  }
+
+  return false;
 }
 
 // ─── HTML helpers ────────────────────────────────────────────────────────────
@@ -495,32 +500,14 @@ export default class TopicPdfButton extends Component {
       return false;
     }
 
-    const topicIds = parseIdList(settings.enabled_topic_ids);
-    const categoryIds = parseCategoryIds();
-    const tags = parseEnabledTags();
+    const rules = settings.pdf_rules || [];
 
-    // No filters configured → show nowhere (must explicitly opt topics in)
-    if (!topicIds.length && !categoryIds.length && !tags.length) {
+    // No rules configured → hidden everywhere
+    if (!rules.length) {
       return false;
     }
 
-    // Specific topic IDs always win
-    if (topicIds.length && topicIds.includes(topic.id)) {
-      return true;
-    }
-
-    // Category match
-    if (categoryIds.length && categoryIds.includes(topic.category_id)) {
-      return true;
-    }
-
-    // Tag match — topic.tags is an array of tag name strings
-    const topicTags = (topic.tags || []).map((t) => t.toLowerCase());
-    if (tags.length && tags.some((t) => topicTags.includes(t))) {
-      return true;
-    }
-
-    return false;
+    return rules.some((rule) => ruleMatches(rule, topic));
   }
 
   @action
@@ -541,7 +528,7 @@ export default class TopicPdfButton extends Component {
       if (!win) {
         // Popup was blocked — alert is the only reliable fallback
         // eslint-disable-next-line no-alert
-        alert(i18n("topic_pdf_download.popup_blocked"));
+        alert("Please allow popups for this site to download PDFs.");
         return;
       }
 
@@ -551,7 +538,7 @@ export default class TopicPdfButton extends Component {
     } catch (err) {
       // eslint-disable-next-line no-console
       console.error("[topic-pdf-download]", err);
-      this.errorMsg = i18n("topic_pdf_download.error");
+      this.errorMsg = "Could not generate PDF. Please try again.";
     } finally {
       this.isLoading = false;
     }
@@ -563,19 +550,22 @@ export default class TopicPdfButton extends Component {
     return `btn ${style} topic-pdf-btn`;
   }
 
+  get buttonLabel() {
+    return this.isLoading ? "Preparing…" : "Download PDF";
+  }
+
   <template>
     {{#if this.shouldShow}}
-      <DButton
-        @action={{this.downloadPdf}}
-        @icon="print"
-        @translatedLabel={{if
-          this.isLoading
-          (i18n "topic_pdf_download.preparing")
-          (i18n "topic_pdf_download.button_label")
-        }}
-        @disabled={{this.isLoading}}
+      <button
+        type="button"
         class={{this.buttonClass}}
-      />
+        disabled={{this.isLoading}}
+        title="Download PDF"
+        {{on "click" this.downloadPdf}}
+      >
+        {{icon "print"}}
+        <span>{{this.buttonLabel}}</span>
+      </button>
       {{#if this.errorMsg}}
         <span class="topic-pdf-error">{{this.errorMsg}}</span>
       {{/if}}
