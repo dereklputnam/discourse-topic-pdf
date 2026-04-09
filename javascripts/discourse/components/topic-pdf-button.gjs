@@ -232,8 +232,49 @@ function buildPrintHtml(topic, posts, logoUrl) {
 
   </div>
   <script>
-    // Wait for images to fully load before opening print dialog
     window.addEventListener("load", function () {
+      // Inject TOC page numbers (best-effort — assumes default print scale)
+      var tocItems = document.querySelectorAll('.pdf-toc-item');
+      if (tocItems.length) {
+        // Temporarily apply print-like layout for accurate measurement
+        var wrap = document.querySelector('.pdf-wrap');
+        var origFS = document.body.style.fontSize;
+        var origMW = wrap.style.maxWidth;
+        var origPD = wrap.style.padding;
+        document.body.style.fontSize = '11pt';
+        wrap.style.maxWidth = '100%';
+        wrap.style.padding = '0';
+        void document.body.offsetHeight; // force reflow
+
+        // Content area: letter 9.5in or A4 10.19in at 96px/in
+        var pageH = 9.5 * 96; // 912px
+
+        tocItems.forEach(function (item) {
+          var link = item.querySelector('a');
+          var href = link && link.getAttribute('href');
+          if (!href) return;
+          var target = document.querySelector(href);
+          if (!target) return;
+
+          var pageNum = Math.floor(target.offsetTop / pageH) + 1;
+
+          var leader = document.createElement('span');
+          leader.className = 'pdf-toc-leader';
+          leader.setAttribute('aria-hidden', 'true');
+          item.appendChild(leader);
+
+          var span = document.createElement('span');
+          span.className = 'pdf-toc-page';
+          span.textContent = pageNum;
+          item.appendChild(span);
+        });
+
+        // Restore screen styles
+        document.body.style.fontSize = origFS;
+        wrap.style.maxWidth = origMW;
+        wrap.style.padding = origPD;
+      }
+
       setTimeout(function () { window.print(); }, 700);
     });
   </script>
@@ -356,10 +397,11 @@ function getPdfCss(siteTitle) {
     }
 
     .pdf-toc-title {
-      font-size: 13pt;
+      font-size: 16pt;
       font-weight: 700;
+      line-height: 1.3;
       color: #111;
-      margin-bottom: 8px;
+      margin-bottom: 10px;
     }
 
     .pdf-toc-list {
@@ -369,6 +411,8 @@ function getPdfCss(siteTitle) {
     }
 
     .pdf-toc-item {
+      display: flex;
+      align-items: baseline;
       margin: 3px 0;
       font-size: 10.5pt;
       line-height: 1.6;
@@ -377,14 +421,30 @@ function getPdfCss(siteTitle) {
     .pdf-toc-item a {
       color: #0076d6;
       text-decoration: none;
+      white-space: nowrap;
     }
 
     .pdf-toc-item a:hover { text-decoration: underline; }
 
-    .pdf-toc-depth-1 { padding-left: 1.2em; }
-    .pdf-toc-depth-2 { padding-left: 2.4em; }
-    .pdf-toc-depth-3 { padding-left: 3.6em; }
-    .pdf-toc-depth-4 { padding-left: 4.8em; }
+    .pdf-toc-leader {
+      flex: 1;
+      border-bottom: 1px dotted #ccc;
+      margin: 0 6px;
+      min-width: 2em;
+      position: relative;
+      bottom: 3px;
+    }
+
+    .pdf-toc-page {
+      white-space: nowrap;
+      color: #555;
+      font-size: 10pt;
+    }
+
+    .pdf-toc-depth-1 { margin-left: 1.2em; }
+    .pdf-toc-depth-2 { margin-left: 2.4em; }
+    .pdf-toc-depth-3 { margin-left: 3.6em; }
+    .pdf-toc-depth-4 { margin-left: 4.8em; }
 
     /* ── Post layout ── */
     .pdf-post-meta {
