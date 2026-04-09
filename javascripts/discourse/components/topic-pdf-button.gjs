@@ -3,6 +3,7 @@ import { action } from "@ember/object";
 import { tracked } from "@glimmer/tracking";
 import { service } from "@ember/service";
 import { on } from "@ember/modifier";
+import { and } from "truth-helpers";
 import { ajax } from "discourse/lib/ajax";
 import icon from "discourse-common/helpers/d-icon";
 
@@ -780,6 +781,12 @@ export default class TopicPdfButton extends Component {
     return false;
   }
 
+  get hasHeadings() {
+    return document.querySelectorAll(
+      ".topic-post .cooked h1, .topic-post .cooked h2, .topic-post .cooked h3, .topic-post .cooked h4, .topic-post .cooked h5, .topic-post .cooked h6"
+    ).length > 0;
+  }
+
   @action
   toggleToc(event) {
     this.includeToc = event.target.checked;
@@ -855,7 +862,7 @@ export default class TopicPdfButton extends Component {
         {{#if this.errorMsg}}
           <span class="topic-pdf-error">{{this.errorMsg}}</span>
         {{/if}}
-        {{#if settings.show_toc}}
+        {{#if (and settings.show_toc this.hasHeadings)}}
           <label class="topic-pdf-toc-toggle">
             <input
               type="checkbox"
