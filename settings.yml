@@ -49,3 +49,12 @@ button_location:
     - "above-topic-footer-buttons"
   description:
     en: "Plugin outlet where the PDF button is rendered."
+
+button_style:
+  type: enum
+  default: "secondary"
+  choices:
+    - "secondary"
+    - "primary"
+  description:
+    en: "Secondary matches the outline style of buttons like Assign. Primary uses the filled color style like Reply to Topic."

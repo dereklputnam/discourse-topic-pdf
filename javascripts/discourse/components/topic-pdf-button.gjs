@@ -557,6 +557,12 @@ export default class TopicPdfButton extends Component {
     }
   }
 
+  get buttonClass() {
+    const style =
+      settings.button_style === "primary" ? "btn-primary" : "btn-default";
+    return `btn ${style} topic-pdf-btn`;
+  }
+
   <template>
     {{#if this.shouldShow}}
       <DButton
@@ -568,7 +574,7 @@ export default class TopicPdfButton extends Component {
           (i18n "topic_pdf_download.button_label")
         }}
         @disabled={{this.isLoading}}
-        class="btn btn-default topic-pdf-btn"
+        class={{this.buttonClass}}
       />
       {{#if this.errorMsg}}
         <span class="topic-pdf-error">{{this.errorMsg}}</span>
