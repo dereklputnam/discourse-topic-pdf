@@ -46,6 +46,14 @@ function escapeHtml(str) {
     .replace(/"/g, "&quot;");
 }
 
+// Decode HTML entities (e.g. &amp; → &) so that text extracted from
+// cooked HTML can be safely re-escaped without double-encoding.
+function decodeEntities(str) {
+  const el = document.createElement("textarea");
+  el.innerHTML = str;
+  return el.value;
+}
+
 // ─── Content processing ──────────────────────────────────────────────────────
 // The cooked HTML from Discourse is already sanitized. We just need to:
 //   1. Rewrite relative URLs to absolute (images, links)
@@ -99,7 +107,7 @@ function buildToc(html) {
   const processed = html.replace(
     /<h([1-6])(\s[^>]*)?>([^]*?)<\/h\1>/gi,
     (match, level, attrs, inner) => {
-      const text = inner.replace(/<[^>]+>/g, "").trim();
+      const text = decodeEntities(inner.replace(/<[^>]+>/g, "")).trim();
       if (!text) {
         return match;
       }
@@ -850,6 +858,16 @@ export default class TopicPdfButton extends Component {
       win.document.open();
       win.document.write(html);
       win.document.close();
+
+      // Replace about:blank with the topic URL so Chrome's built-in
+      // print footer shows the real URL instead of "about:blank"
+      const topic = this.topic;
+      const topicUrl = `${window.location.origin}/t/${topic.slug || topic.id}/${topic.id}`;
+      try {
+        win.history.replaceState(null, "", topicUrl);
+      } catch (e) {
+        // Silently ignore if the browser blocks cross-origin state change
+      }
 
       // Trigger print from the opener — more reliable than the inline
       // script inside the popup, which some browsers block.
