@@ -95,22 +95,40 @@ function buildPrintHtml(topic, posts, logoUrl) {
         .join(" ")}</div>`
     : "";
 
+  // OP byline goes in the header (above the rule) for an article feel
+  const firstPost = posts[0];
+  const opBylineHtml = settings.show_post_meta && firstPost
+    ? (() => {
+        const date = new Date(firstPost.created_at).toLocaleDateString(undefined, {
+          year: "numeric",
+          month: "long",
+          day: "numeric",
+        });
+        return `<div class="pdf-byline">
+          <strong class="pdf-author">${escapeHtml(firstPost.username)}</strong>
+          <span class="pdf-date">${escapeHtml(date)}</span>
+        </div>`;
+      })()
+    : "";
+
   const postsHtml = posts
     .map((post, idx) => {
       const cooked = processCooked(post.cooked || "");
 
-      const date = new Date(post.created_at).toLocaleDateString(undefined, {
-        year: "numeric",
-        month: "long",
-        day: "numeric",
-      });
-
-      const metaHtml = settings.show_post_meta
-        ? `<div class="pdf-post-meta">
-            <strong class="pdf-author">${escapeHtml(post.username)}</strong>
-            <span class="pdf-date">${escapeHtml(date)}</span>
-            ${idx > 0 ? `<span class="pdf-post-num">Reply #${post.post_number}</span>` : ""}
-           </div>`
+      // OP meta is rendered in the header; only show meta for replies
+      const metaHtml = settings.show_post_meta && idx > 0
+        ? (() => {
+            const date = new Date(post.created_at).toLocaleDateString(undefined, {
+              year: "numeric",
+              month: "long",
+              day: "numeric",
+            });
+            return `<div class="pdf-post-meta">
+              <strong class="pdf-author">${escapeHtml(post.username)}</strong>
+              <span class="pdf-date">${escapeHtml(date)}</span>
+              <span class="pdf-post-num">Reply #${post.post_number}</span>
+            </div>`;
+          })()
         : "";
 
       return `
@@ -142,6 +160,7 @@ function buildPrintHtml(topic, posts, logoUrl) {
         ${escapeHtml(topic.title)}<a class="pdf-title-link" href="${escapeHtml(topicUrl)}" title="Link to original document"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" aria-hidden="true"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/></svg></a>
       </h1>
       ${tagsHtml}
+      ${opBylineHtml}
     </header>
 
     <main class="pdf-body">
@@ -258,6 +277,18 @@ function getPdfCss() {
       color: #555;
       margin-right: 4px;
     }
+
+    /* ── OP byline (in header, above rule) ── */
+    .pdf-byline {
+      display: flex;
+      gap: 10px;
+      align-items: baseline;
+      font-size: 9.5pt;
+      color: #777;
+      margin-top: 4px;
+    }
+
+    .pdf-byline .pdf-author { color: #333; font-weight: 600; }
 
     /* ── Post layout ── */
     .pdf-post-meta {
