@@ -852,6 +852,9 @@ export default class TopicPdfButton extends Component {
           {{icon "download"}}
           <span>{{this.buttonLabel}}</span>
         </button>
+        {{#if this.errorMsg}}
+          <span class="topic-pdf-error">{{this.errorMsg}}</span>
+        {{/if}}
         {{#if settings.show_toc}}
           <label class="topic-pdf-toc-toggle">
             <input
@@ -861,9 +864,6 @@ export default class TopicPdfButton extends Component {
             />
             Include contents
           </label>
-        {{/if}}
-        {{#if this.errorMsg}}
-          <span class="topic-pdf-error">{{this.errorMsg}}</span>
         {{/if}}
       </div>
     {{/if}}
