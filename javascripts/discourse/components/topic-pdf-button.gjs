@@ -74,23 +74,22 @@ function processCooked(html) {
 // ─── PDF document builder ────────────────────────────────────────────────────
 
 function getSiteLogo() {
-  // Discourse renders two logos: .logo-big (full, shown at top of page) and
-  // .logo-small (compact icon, shown after scrolling). Always prefer the big
-  // one so the PDF reflects the primary branding regardless of scroll position.
-  const preferredSelectors = [
-    "img.logo-big",
-    "#site-logo",
-    ".d-header .logo-wrapper img:not(.logo-small)",
-    ".d-header img[alt]:not(.logo-small)",
-  ];
-  for (const sel of preferredSelectors) {
-    const el = document.querySelector(sel);
-    // el.src is always an absolute URL in the browser
-    if (el?.src) {
-      return el.src;
-    }
+  // Discourse swaps the logo src (or hides/shows elements) on scroll, so the
+  // DOM reflects whatever state existed when the button was clicked.
+  // Use the JS site-settings object instead — it holds the configured URL
+  // independent of scroll state.
+  const ds = window.Discourse?.SiteSettings;
+  if (ds?.logo) {
+    const path = ds.logo;
+    return path.startsWith("http") ? path : `${window.location.origin}${path}`;
   }
-  return null;
+
+  // Fallback: prefer the big logo element; ignore anything named logo-small
+  const headerImgs = Array.from(document.querySelectorAll(".d-header img"));
+  const big = headerImgs.find(
+    (el) => !el.classList.contains("logo-small") && el.src
+  );
+  return big?.src || null;
 }
 
 function buildPrintHtml(topic, posts) {
@@ -160,7 +159,7 @@ function buildPrintHtml(topic, posts) {
         : `<div class="pdf-source">${escapeHtml(siteTitle)}</div>`
       }
       <h1 class="pdf-title">
-        ${escapeHtml(topic.title)}<a class="pdf-title-link" href="${escapeHtml(topicUrl)}" title="Link to original document"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" aria-hidden="true"><path d="M3.9 12c0-1.71 1.39-3.1 3.1-3.1h4V7H7c-2.76 0-5 2.24-5 5s2.24 5 5 5h4v-1.9H7c-1.71 0-3.1-1.39-3.1-3.1zM8 13h8v-2H8v2zm9-6h-4v1.9h4c1.71 0 3.1 1.39 3.1 3.1s-1.39 3.1-3.1 3.1h-4V17h4c2.76 0 5-2.24 5-5s-2.24-5-5-5z"/></svg></a>
+        ${escapeHtml(topic.title)}<a class="pdf-title-link" href="${escapeHtml(topicUrl)}" title="Link to original document"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/></svg></a>
       </h1>
       ${tagsHtml}
     </header>
@@ -261,7 +260,9 @@ function getPdfCss() {
     .pdf-title-link svg {
       width: 16px;
       height: 16px;
-      fill: currentColor;
+      fill: none;
+      stroke: currentColor;
+      stroke-width: 2;
     }
 
     .pdf-tags { margin-bottom: 8px; }
