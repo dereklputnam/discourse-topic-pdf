@@ -862,7 +862,7 @@ export default class TopicPdfButton extends Component {
               checked={{this.includeToc}}
               {{on "change" this.toggleToc}}
             />
-            Include contents
+            Include outline
           </label>
         {{/if}}
       </div>
