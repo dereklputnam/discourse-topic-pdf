@@ -42,6 +42,12 @@ show_tags:
   description:
     en: "Show topic tags in the PDF header."
 
+show_toc:
+  type: bool
+  default: true
+  description:
+    en: "Auto-generate a table of contents from headings in the post content."
+
 
 button_style:
   type: enum

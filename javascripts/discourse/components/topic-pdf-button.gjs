@@ -72,6 +72,54 @@ function processCooked(html) {
   return html;
 }
 
+// ─── Table of contents builder ───────────────────────────────────────────────
+// Scans an HTML string for <h1>–<h6> elements, injects anchor IDs, and returns
+// both the modified HTML and a TOC nav block. Skips headings with no text.
+
+function buildToc(html) {
+  const headings = [];
+  let counter = 0;
+
+  const processed = html.replace(
+    /<h([1-6])(\s[^>]*)?>([^]*?)<\/h\1>/gi,
+    (match, level, attrs, inner) => {
+      const text = inner.replace(/<[^>]+>/g, "").trim();
+      if (!text) {
+        return match;
+      }
+      counter++;
+      const id = `pdf-h-${counter}`;
+      headings.push({ id, level: parseInt(level, 10), text });
+      // Preserve existing attributes; add our id
+      const a = attrs || "";
+      return `<h${level}${a} id="${id}">${inner}</h${level}>`;
+    }
+  );
+
+  if (!headings.length) {
+    return { html, tocHtml: "" };
+  }
+
+  const minLevel = Math.min(...headings.map((h) => h.level));
+
+  const items = headings
+    .map((h) => {
+      const depth = h.level - minLevel;
+      return `<li class="pdf-toc-item pdf-toc-depth-${depth}"><a href="#${h.id}">${escapeHtml(h.text)}</a></li>`;
+    })
+    .join("\n        ");
+
+  const tocHtml = `
+    <nav class="pdf-toc">
+      <div class="pdf-toc-title">Contents</div>
+      <ol class="pdf-toc-list">
+        ${items}
+      </ol>
+    </nav>`;
+
+  return { html: processed, tocHtml };
+}
+
 // ─── PDF document builder ────────────────────────────────────────────────────
 
 function buildPrintHtml(topic, posts, logoUrl) {
@@ -111,7 +159,7 @@ function buildPrintHtml(topic, posts, logoUrl) {
       })()
     : "";
 
-  const postsHtml = posts
+  let postsHtml = posts
     .map((post, idx) => {
       const cooked = processCooked(post.cooked || "");
 
@@ -140,6 +188,14 @@ function buildPrintHtml(topic, posts, logoUrl) {
     })
     .join('<div class="pdf-separator" role="separator"></div>');
 
+  // Build TOC from headings found in the post content
+  let tocHtml = "";
+  if (settings.show_toc) {
+    const toc = buildToc(postsHtml);
+    postsHtml = toc.html;
+    tocHtml = toc.tocHtml;
+  }
+
   return `<!DOCTYPE html>
 <html lang="en">
 <head>
@@ -162,6 +218,8 @@ function buildPrintHtml(topic, posts, logoUrl) {
       ${tagsHtml}
       ${opBylineHtml}
     </header>
+
+    ${tocHtml}
 
     <main class="pdf-body">
       ${postsHtml}
@@ -289,6 +347,44 @@ function getPdfCss() {
     }
 
     .pdf-byline .pdf-author { color: #333; font-weight: 600; }
+
+    /* ── Table of contents ── */
+    .pdf-toc {
+      margin-bottom: 24px;
+      padding-bottom: 20px;
+      border-bottom: 1px solid #e4e4e4;
+    }
+
+    .pdf-toc-title {
+      font-size: 13pt;
+      font-weight: 700;
+      color: #111;
+      margin-bottom: 8px;
+    }
+
+    .pdf-toc-list {
+      list-style: none;
+      margin: 0;
+      padding: 0;
+    }
+
+    .pdf-toc-item {
+      margin: 3px 0;
+      font-size: 10.5pt;
+      line-height: 1.6;
+    }
+
+    .pdf-toc-item a {
+      color: #0076d6;
+      text-decoration: none;
+    }
+
+    .pdf-toc-item a:hover { text-decoration: underline; }
+
+    .pdf-toc-depth-1 { padding-left: 1.2em; }
+    .pdf-toc-depth-2 { padding-left: 2.4em; }
+    .pdf-toc-depth-3 { padding-left: 3.6em; }
+    .pdf-toc-depth-4 { padding-left: 4.8em; }
 
     /* ── Post layout ── */
     .pdf-post-meta {
