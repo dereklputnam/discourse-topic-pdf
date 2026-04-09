@@ -17,13 +17,13 @@ enabled_topic_ids:
     en: "Specific topic IDs to show the PDF button on. The button will not appear unless at least one of these fields is configured."
 
 first_post_only:
-  type: boolean
+  type: bool
   default: true
   description:
     en: "When enabled, only the first post (original post) is included in the PDF. Disable to include all replies."
 
 show_post_meta:
-  type: boolean
+  type: bool
   default: true
   description:
     en: "Show author username and date above each post in the PDF."
