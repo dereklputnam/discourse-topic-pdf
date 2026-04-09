@@ -122,7 +122,7 @@ function buildToc(html) {
 
 // ─── PDF document builder ────────────────────────────────────────────────────
 
-function buildPrintHtml(topic, posts, logoUrl) {
+function buildPrintHtml(topic, posts, logoUrl, tocEnabled) {
   const origin = window.location.origin;
   const topicUrl = `${origin}/t/${encodeURIComponent(topic.slug || topic.id)}/${topic.id}`;
 
@@ -190,7 +190,7 @@ function buildPrintHtml(topic, posts, logoUrl) {
 
   // Build TOC from headings found in the post content
   let tocHtml = "";
-  if (settings.show_toc) {
+  if (tocEnabled) {
     const toc = buildToc(postsHtml);
     postsHtml = toc.html;
     tocHtml = toc.tocHtml;
@@ -721,6 +721,7 @@ export default class TopicPdfButton extends Component {
   @service siteSettings;
   @tracked isLoading = false;
   @tracked errorMsg = null;
+  @tracked includeToc = settings.show_toc;
 
   get logoUrl() {
     if (!settings.show_logo) {
@@ -780,6 +781,11 @@ export default class TopicPdfButton extends Component {
   }
 
   @action
+  toggleToc(event) {
+    this.includeToc = event.target.checked;
+  }
+
+  @action
   async downloadPdf() {
     if (this.isLoading) {
       return;
@@ -790,7 +796,7 @@ export default class TopicPdfButton extends Component {
 
     try {
       const posts = await fetchPosts(this.topic);
-      const html = buildPrintHtml(this.topic, posts, this.logoUrl);
+      const html = buildPrintHtml(this.topic, posts, this.logoUrl, this.includeToc);
 
       const win = window.open("", "_blank");
 
@@ -846,6 +852,16 @@ export default class TopicPdfButton extends Component {
           {{icon "download"}}
           <span>{{this.buttonLabel}}</span>
         </button>
+        {{#if settings.show_toc}}
+          <label class="topic-pdf-toc-toggle">
+            <input
+              type="checkbox"
+              checked={{this.includeToc}}
+              {{on "change" this.toggleToc}}
+            />
+            Include contents
+          </label>
+        {{/if}}
         {{#if this.errorMsg}}
           <span class="topic-pdf-error">{{this.errorMsg}}</span>
         {{/if}}

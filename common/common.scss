@@ -50,6 +50,22 @@
   gap: 0.4em;
 }
 
+// TOC checkbox alongside the button
+.topic-pdf-toc-toggle {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.3em;
+  font-size: var(--font-down-1);
+  color: var(--primary-medium);
+  cursor: pointer;
+  user-select: none;
+
+  input[type="checkbox"] {
+    margin: 0;
+    cursor: pointer;
+  }
+}
+
 // Inline error message shown if PDF generation fails
 .topic-pdf-error {
   color: var(--danger);
