@@ -515,9 +515,12 @@ export default class TopicPdfButton extends Component {
   @tracked isLoading = false;
   @tracked errorMsg = null;
 
-  // topic-navigation passes model (the topic)
+  // topic-navigation passes model; above-topic-footer-buttons passes topic
   get topic() {
-    return this.args.outletArgs?.model || this.args.outletArgs?.topic;
+    return (
+      this.args.outletArgs?.model ||
+      this.args.outletArgs?.topic
+    );
   }
 
   get shouldShow() {

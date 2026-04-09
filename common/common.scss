@@ -20,6 +20,12 @@
   .topic-above-post-stream & {
     justify-content: center;
   }
+
+  // Above footer buttons — align left, match surrounding button row spacing
+  .above-topic-footer-buttons & {
+    padding: 0.25em 0;
+    justify-content: flex-start;
+  }
 }
 
 .topic-pdf-btn {
