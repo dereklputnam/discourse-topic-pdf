@@ -522,6 +522,9 @@ export default class TopicPdfButton extends Component {
     if (!path) {
       return null;
     }
+    if (path.startsWith("//")) {
+      return `${window.location.protocol}${path}`;
+    }
     return path.startsWith("http") ? path : `${window.location.origin}${path}`;
   }
 
