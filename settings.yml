@@ -32,14 +32,15 @@ show_post_meta:
 
 button_location:
   type: enum
-  default: "topic-above-posts"
+  default: "post-before-cooked"
   choices:
+    - "post-before-cooked"
     - "topic-above-posts"
     - "topic-above-post-stream"
     - "topic-footer-buttons"
     - "above-topic-footer-buttons"
   description:
-    en: "Plugin outlet where the PDF button is rendered."
+    en: "Plugin outlet where the PDF button is rendered. post-before-cooked places it inside the first post, above the content."
 
 button_style:
   type: enum

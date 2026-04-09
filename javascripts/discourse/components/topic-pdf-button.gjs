@@ -477,12 +477,24 @@ export default class TopicPdfButton extends Component {
   @tracked isLoading = false;
   @tracked errorMsg = null;
 
-  // topic-above-post-stream passes model; topic-footer-buttons passes topic
+  // Post-level outlets (e.g. post-before-cooked) pass `post`.
+  // Topic-level outlets (e.g. topic-above-posts) pass `model` or `topic`.
+  get post() {
+    return this.args.outletArgs?.post;
+  }
+
   get topic() {
+    if (this.post?.topic) return this.post.topic;
     return this.args.outletArgs?.model || this.args.outletArgs?.topic;
   }
 
   get shouldShow() {
+    // Post-level outlet: only render on the first post, not every reply
+    const post = this.post;
+    if (post && post.post_number !== 1) {
+      return false;
+    }
+
     const topic = this.topic;
     if (!topic) {
       return false;
@@ -559,19 +571,21 @@ export default class TopicPdfButton extends Component {
 
   <template>
     {{#if this.shouldShow}}
-      <button
-        type="button"
-        class={{this.buttonClass}}
-        disabled={{this.isLoading}}
-        title="Download PDF"
-        {{on "click" this.downloadPdf}}
-      >
-        {{icon "print"}}
-        <span>{{this.buttonLabel}}</span>
-      </button>
-      {{#if this.errorMsg}}
-        <span class="topic-pdf-error">{{this.errorMsg}}</span>
-      {{/if}}
+      <div class="topic-pdf-btn-wrap">
+        <button
+          type="button"
+          class={{this.buttonClass}}
+          disabled={{this.isLoading}}
+          title="Download PDF"
+          {{on "click" this.downloadPdf}}
+        >
+          {{icon "download"}}
+          <span>{{this.buttonLabel}}</span>
+        </button>
+        {{#if this.errorMsg}}
+          <span class="topic-pdf-error">{{this.errorMsg}}</span>
+        {{/if}}
+      </div>
     {{/if}}
   </template>
 }

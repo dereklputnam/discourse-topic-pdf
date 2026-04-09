@@ -1,22 +1,37 @@
 // Topic PDF Download — forum-side button styles
 // The PDF document itself is styled by the inline CSS in topic-pdf-button.gjs.
 
-.topic-pdf-btn {
-  // Inherits .btn and .btn-default from Discourse core.
-  // The print icon is rendered by DButton via the d-icon helper.
+// Wrapper div rendered around the button in every outlet.
+// Centers the button when in topic-level outlets (above-posts, above-post-stream).
+// Flows left-aligned when inside a post (post-before-cooked).
+.topic-pdf-btn-wrap {
+  display: flex;
+  align-items: center;
+  gap: 0.5em;
+  padding: 0.5em 0;
 
-  // Subtle visual separation if rendered above the post stream
-  .topic-above-post-stream & {
-    margin-bottom: 0.5em;
+  // Inside the first post — align left, tighter bottom gap before content
+  .post-article & {
+    padding: 0 0 0.75em;
   }
+
+  // Standalone above the post stream — center it
+  .topic-above-posts &,
+  .topic-above-post-stream & {
+    justify-content: center;
+  }
+}
+
+.topic-pdf-btn {
+  // Inherits .btn and .btn-default / .btn-primary from Discourse core.
+  // Icon (.d-icon) and label (<span>) are siblings inside the button.
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4em;
 }
 
 // Inline error message shown if PDF generation fails
 .topic-pdf-error {
-  display: inline-flex;
-  align-items: center;
-  gap: 0.3em;
   color: var(--danger);
   font-size: var(--font-down-1);
-  margin-left: 0.5em;
 }
