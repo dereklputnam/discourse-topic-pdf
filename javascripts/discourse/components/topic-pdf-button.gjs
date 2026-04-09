@@ -511,24 +511,12 @@ export default class TopicPdfButton extends Component {
   @tracked isLoading = false;
   @tracked errorMsg = null;
 
-  // Post-level outlets (e.g. post-before-cooked) pass `post`.
-  // Topic-level outlets (e.g. topic-above-posts) pass `model` or `topic`.
-  get post() {
-    return this.args.outletArgs?.post;
-  }
-
+  // topic-navigation passes model (the topic)
   get topic() {
-    if (this.post?.topic) return this.post.topic;
     return this.args.outletArgs?.model || this.args.outletArgs?.topic;
   }
 
   get shouldShow() {
-    // Post-level outlet: only render on the first post, not every reply
-    const post = this.post;
-    if (post && post.post_number !== 1) {
-      return false;
-    }
-
     const topic = this.topic;
     if (!topic) {
       return false;

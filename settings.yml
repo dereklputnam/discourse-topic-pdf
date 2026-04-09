@@ -30,18 +30,6 @@ show_post_meta:
   description:
     en: "Show author username and date above each post in the PDF."
 
-button_location:
-  type: enum
-  default: "post-content-cooked-html"
-  choices:
-    - "post-content-cooked-html"
-    - "topic-navigation"
-    - "topic-above-posts"
-    - "topic-above-post-stream"
-    - "topic-footer-buttons"
-    - "above-topic-footer-buttons"
-  description:
-    en: "Plugin outlet where the PDF button is rendered. post-content-cooked-html places it inside the first post, above the content."
 
 button_style:
   type: enum
