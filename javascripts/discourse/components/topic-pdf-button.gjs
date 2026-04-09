@@ -54,6 +54,11 @@ function decodeEntities(str) {
   return el.value;
 }
 
+// Escape a string for use inside a CSS content: "…" value.
+function escapeCssString(str) {
+  return String(str).replace(/\\/g, "\\\\").replace(/"/g, '\\"');
+}
+
 // ─── Content processing ──────────────────────────────────────────────────────
 // The cooked HTML from Discourse is already sanitized. We just need to:
 //   1. Rewrite relative URLs to absolute (images, links)
@@ -77,6 +82,10 @@ function processCooked(html) {
 
   // Remove lightbox overlay metadata divs (they render as blank space)
   html = html.replace(/<div class="meta[^"]*"[^>]*>[\s\S]*?<\/div>/g, "");
+
+  // Force all <details> elements open so spoiler/collapsible content
+  // is visible in the PDF instead of hidden behind a closed toggle
+  html = html.replace(/<details(?!\s+open)/gi, "<details open");
 
   return html;
 }
@@ -674,7 +683,7 @@ function getPdfCss(siteTitle) {
       margin: 0.75in;
 
       @bottom-left {
-        content: "${escapeHtml(siteTitle)}";
+        content: "${escapeCssString(siteTitle)}";
         font-size: 8pt;
         color: #bbb;
         font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto,
