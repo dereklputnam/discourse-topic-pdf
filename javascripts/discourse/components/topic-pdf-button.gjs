@@ -9,6 +9,7 @@ import { i18n } from "discourse-i18n";
 // Discourse list settings are stored as pipe-separated strings internally,
 // but users enter them comma-separated in the UI. Handle both.
 
+// enabled_topic_ids is still a plain list setting (no picker type for topics)
 function parseIdList(str) {
   if (!str) {
     return [];
@@ -20,15 +21,20 @@ function parseIdList(str) {
     .filter((n) => !isNaN(n) && n > 0);
 }
 
-function parseTagList(str) {
-  if (!str) {
-    return [];
-  }
+// enabled_categories is type:objects — each row has a `categories` array of IDs
+// e.g. [{categories: [5, 12]}, {categories: [7]}]
+function parseCategoryIds() {
+  return (settings.enabled_categories || []).flatMap(
+    (row) => row.categories || []
+  );
+}
 
-  return str
-    .split(/[,|]/)
-    .map((s) => s.trim().toLowerCase())
-    .filter(Boolean);
+// enabled_tags is type:objects — each row has a `tags` array of tag name strings
+// e.g. [{tags: ["support", "how-to"]}, ...]
+function parseEnabledTags() {
+  return (settings.enabled_tags || [])
+    .flatMap((row) => row.tags || [])
+    .map((t) => t.toLowerCase());
 }
 
 // ─── HTML helpers ────────────────────────────────────────────────────────────
@@ -490,8 +496,8 @@ export default class TopicPdfButton extends Component {
     }
 
     const topicIds = parseIdList(settings.enabled_topic_ids);
-    const categoryIds = parseIdList(settings.enabled_category_ids);
-    const tags = parseTagList(settings.enabled_tags);
+    const categoryIds = parseCategoryIds();
+    const tags = parseEnabledTags();
 
     // No filters configured → show nowhere (must explicitly opt topics in)
     if (!topicIds.length && !categoryIds.length && !tags.length) {

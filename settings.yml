@@ -1,14 +1,26 @@
-enabled_category_ids:
-  type: list
-  default: ""
+enabled_categories:
+  type: objects
+  default: []
   description:
-    en: "Category IDs where the PDF button appears. The button will not appear unless at least one of these fields is configured."
+    en: "Categories where the PDF button appears. The button will not appear unless at least one of these fields is configured."
+  schema:
+    name: Category
+    properties:
+      categories:
+        type: categories
+        required: true
 
 enabled_tags:
-  type: list
-  default: ""
+  type: objects
+  default: []
   description:
-    en: "Tags — PDF button appears on topics that have at least one of these tags. The button will not appear unless at least one of these fields is configured."
+    en: "Tags where the PDF button appears. The button will not appear unless at least one of these fields is configured."
+  schema:
+    name: Tag
+    properties:
+      tags:
+        type: tags
+        required: true
 
 enabled_topic_ids:
   type: list
