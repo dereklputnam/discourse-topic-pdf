@@ -111,7 +111,7 @@ function buildToc(html) {
 
   const tocHtml = `
     <nav class="pdf-toc">
-      <div class="pdf-toc-title">Contents</div>
+      <h1 class="pdf-toc-title">Contents</h1>
       <ol class="pdf-toc-list">
         ${items}
       </ol>
@@ -202,7 +202,7 @@ function buildPrintHtml(topic, posts, logoUrl) {
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>${escapeHtml(topic.title)}</title>
-  <style>${getPdfCss()}</style>
+  <style>${getPdfCss(siteTitle)}</style>
 </head>
 <body>
   <div class="pdf-wrap">
@@ -250,7 +250,7 @@ function buildPrintHtml(topic, posts, logoUrl) {
 //   - .poll            → poll embeds
 //   - img.emoji        → inline emoji images
 
-function getPdfCss() {
+function getPdfCss(siteTitle) {
   return `
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
@@ -577,9 +577,32 @@ function getPdfCss() {
     }
 
     /* ── @media print ── */
+    @page {
+      margin: 0.75in;
+
+      @bottom-left {
+        content: "${escapeHtml(siteTitle)}";
+        font-size: 8pt;
+        color: #bbb;
+        font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto,
+                     Helvetica, Arial, sans-serif;
+      }
+
+      @bottom-right {
+        content: "Page " counter(page) " of " counter(pages);
+        font-size: 8pt;
+        color: #bbb;
+        font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto,
+                     Helvetica, Arial, sans-serif;
+      }
+    }
+
     @media print {
       body { font-size: 11pt; }
       .pdf-wrap { padding: 0; max-width: 100%; }
+
+      /* Body footer hidden in print — info is in the page margins */
+      .pdf-footer { display: none; }
 
       /* Suppress "URL (href)" that some browsers append to links */
       a::after { content: "" !important; }
