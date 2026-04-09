@@ -781,10 +781,9 @@ export default class TopicPdfButton extends Component {
     return false;
   }
 
-  get hasHeadings() {
-    return document.querySelectorAll(
-      ".topic-post .cooked h1, .topic-post .cooked h2, .topic-post .cooked h3, .topic-post .cooked h4, .topic-post .cooked h5, .topic-post .cooked h6"
-    ).length > 0;
+  get hasToc() {
+    // DiscoTOC renders .d-toc-wrapper when the topic qualifies for a TOC
+    return !!document.querySelector(".d-toc-wrapper");
   }
 
   @action
@@ -862,7 +861,7 @@ export default class TopicPdfButton extends Component {
         {{#if this.errorMsg}}
           <span class="topic-pdf-error">{{this.errorMsg}}</span>
         {{/if}}
-        {{#if (and settings.show_toc this.hasHeadings)}}
+        {{#if (and settings.show_toc this.hasToc)}}
           <label class="topic-pdf-toc-toggle">
             <input
               type="checkbox"
