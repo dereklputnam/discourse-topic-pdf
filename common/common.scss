@@ -51,13 +51,15 @@
   gap: 0.4em;
 }
 
-// TOC checkbox below the button
+// TOC checkbox below the button, centered
 .topic-pdf-toc-toggle {
   display: inline-flex;
   align-items: center;
+  justify-content: center;
   gap: 0.3em;
   flex-basis: 100%;
   font-size: var(--font-down-1);
+  font-weight: normal;
   color: var(--primary-medium);
   cursor: pointer;
   user-select: none;
