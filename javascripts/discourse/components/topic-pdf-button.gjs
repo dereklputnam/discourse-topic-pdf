@@ -725,7 +725,7 @@ export default class TopicPdfButton extends Component {
   @tracked includeToc = settings.show_toc;
 
   get logoUrl() {
-    if (!settings.show_logo) {
+    if (!settings.show_site_logo) {
       return null;
     }
     // siteSettings.logo is the admin-configured path (e.g. /uploads/…).
