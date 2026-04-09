@@ -1,6 +1,7 @@
 import Component from "@glimmer/component";
 import { action } from "@ember/object";
 import { tracked } from "@glimmer/tracking";
+import { service } from "@ember/service";
 import { on } from "@ember/modifier";
 import { ajax } from "discourse/lib/ajax";
 import icon from "discourse-common/helpers/d-icon";
@@ -73,27 +74,7 @@ function processCooked(html) {
 
 // ─── PDF document builder ────────────────────────────────────────────────────
 
-// ─── Logo URL — captured once at module init ─────────────────────────────────
-// Discourse swaps the header logo on scroll (shows the compact icon once the
-// user scrolls down). Capturing the URL here — at module load time, before any
-// scroll events fire — guarantees we always get the full-size logo.
-const SITE_LOGO_URL = (() => {
-  // Prefer the big logo element; it is visible at page load
-  const selectors = [
-    "img.logo-big",
-    "#site-logo",
-    ".d-header img:not(.logo-small)",
-  ];
-  for (const sel of selectors) {
-    const el = document.querySelector(sel);
-    if (el?.src) {
-      return el.src;
-    }
-  }
-  return null;
-})();
-
-function buildPrintHtml(topic, posts) {
+function buildPrintHtml(topic, posts, logoUrl) {
   const origin = window.location.origin;
   const topicUrl = `${origin}/t/${encodeURIComponent(topic.slug || topic.id)}/${topic.id}`;
 
@@ -102,8 +83,6 @@ function buildPrintHtml(topic, posts) {
     document.querySelector("meta[property='og:site_name']")?.getAttribute("content") ||
     document.title.split(" - ").slice(-1)[0]?.trim() ||
     window.location.hostname;
-
-  const logoUrl = SITE_LOGO_URL;
 
   // topic.tags can be an array of strings or tag objects with a .name property
   const tagNames = (topic.tags || []).map((t) =>
@@ -529,8 +508,22 @@ async function fetchPosts(topic) {
 // ─── Component ────────────────────────────────────────────────────────────────
 
 export default class TopicPdfButton extends Component {
+  @service siteSettings;
   @tracked isLoading = false;
   @tracked errorMsg = null;
+
+  get logoUrl() {
+    if (!settings.show_logo) {
+      return null;
+    }
+    // siteSettings.logo is the admin-configured path (e.g. /uploads/…).
+    // It never changes with scroll state — unlike the DOM header element.
+    const path = this.siteSettings?.logo;
+    if (!path) {
+      return null;
+    }
+    return path.startsWith("http") ? path : `${window.location.origin}${path}`;
+  }
 
   // topic-navigation passes model; above-topic-footer-buttons passes topic
   get topic() {
@@ -584,7 +577,7 @@ export default class TopicPdfButton extends Component {
 
     try {
       const posts = await fetchPosts(this.topic);
-      const html = buildPrintHtml(this.topic, posts);
+      const html = buildPrintHtml(this.topic, posts, this.logoUrl);
 
       const win = window.open("", "_blank");
 

@@ -30,6 +30,12 @@ show_post_meta:
   description:
     en: "Show author username and date above each post in the PDF."
 
+show_logo:
+  type: bool
+  default: true
+  description:
+    en: "Show the site logo at the top of the PDF."
+
 show_tags:
   type: bool
   default: true
